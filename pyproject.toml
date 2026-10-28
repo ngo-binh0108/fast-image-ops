@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fast-image-ops"
+version = "0.1.0"
+description = "Image filters whose cost per pixel does not grow with the window size: box mean, guided filter, van Herk/Gil-Werman morphology, exact Euclidean distance transform"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "ngo-binh0108" }]
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.23"]
+
+[project.optional-dependencies]
+test = ["pytest", "scipy"]
+demo = ["matplotlib"]
+
+[project.urls]
+Repository = "https://github.com/ngo-binh0108/fast-image-ops"
+
+[tool.setuptools]
+packages = ["fast_image_ops"]
