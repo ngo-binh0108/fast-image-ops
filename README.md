@@ -104,7 +104,7 @@ window scan is only run up to r=8.
 | guided, color guide | guided_filter | 337.0 | 298.1 | 317.0 |
 | guided, color guide | fast_guided_filter s=4 | 65.6 | 63.0 | 61.7 |
 
-Exact EDT with 1% zero pixels: 165 ms here, 15 ms for SciPy.
+Exact EDT with 1% zero pixels: 115 ms here, 16 ms for SciPy.
 
 What the numbers show:
 

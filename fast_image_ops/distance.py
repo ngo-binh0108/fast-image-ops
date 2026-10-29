@@ -9,6 +9,11 @@ columns. Each 1-D transform is the lower envelope of parabolas
 inherently sequential along a line, so here the loop runs over positions and
 every step is vectorized across all lines at once: O(n) Python iterations for
 an n x n image instead of O(n^2).
+
+Two parts need no Python loop at all. The first (row) pass of a binary mask
+only has f in {0, inf}, so it is the distance to the nearest zero in the row,
+found with two running `accumulate` scans. And reading the envelope back is a
+single `searchsorted` over all lines, since every line's breakpoints are sorted.
 """
 import numpy as np
 
@@ -55,17 +60,29 @@ def squared_distance_1d(f, axis=-1):
         z[active, k + 1] = s
         z[active, k + 2] = np.inf
 
-    d = np.empty_like(f)
-    j = np.zeros(lines, dtype=np.intp)
-    for q in range(n):
-        while True:
-            advance = z[rows, j + 1] < q
-            if not advance.any():
-                break
-            j[advance] += 1
-        p = v[rows, j]
-        d[:, q] = (q - p) ** 2 + f[rows, p]
+    # The parabola covering q is the j-th one, where j counts the breakpoints
+    # z[r, 1:] below q. Clipping z to [-1, n] keeps each line's breakpoints
+    # sorted, and offsetting line r by r * (n + 2) makes the whole array sorted,
+    # so one searchsorted finds j for every (line, q) at once.
+    stride = n + 2
+    offsets = rows[:, None] * stride
+    breaks = (np.clip(z[:, 1:], -1, n) + offsets).ravel()
+    q = np.arange(n)
+    j = np.searchsorted(breaks, (q + offsets).ravel(), side='left').reshape(lines, n) - rows[:, None] * n
+    p = v[rows[:, None], j]
+    d = (q - p) ** 2 + f[rows[:, None], p]
     return np.moveaxis(d.reshape(shape), -1, axis)
+
+
+def _nearest_zero_1d(zero):
+    """Squared distance along the last axis to the nearest True of `zero` (inf if none)."""
+    n = zero.shape[-1]
+    idx = np.arange(n)
+    left = np.maximum.accumulate(np.where(zero, idx, -2 * n), axis=-1)
+    right = np.minimum.accumulate(np.where(zero, idx, 3 * n)[..., ::-1], axis=-1)[..., ::-1]
+    d = np.minimum(idx - left, right - idx).astype(np.float64)
+    d[d > n] = np.inf
+    return d * d
 
 
 def distance_transform(mask, squared=False):
@@ -77,6 +94,5 @@ def distance_transform(mask, squared=False):
     mask = np.asarray(mask)
     if mask.ndim != 2:
         raise ValueError(f"expected a 2-D mask, got shape {mask.shape}")
-    f = np.where(mask != 0, np.inf, 0.0)
-    d2 = squared_distance_1d(squared_distance_1d(f, axis=1), axis=0)
+    d2 = squared_distance_1d(_nearest_zero_1d(mask == 0), axis=0)
     return d2 if squared else np.sqrt(d2)
