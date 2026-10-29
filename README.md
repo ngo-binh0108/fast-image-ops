@@ -104,7 +104,7 @@ window scan is only run up to r=8.
 | guided, color guide | guided_filter | 337.0 | 298.1 | 317.0 |
 | guided, color guide | fast_guided_filter s=4 | 65.6 | 63.0 | 61.7 |
 
-Exact EDT with 1% zero pixels: 165 ms here, 15 ms for SciPy.
+Exact EDT with 1% zero pixels: 115 ms here, 16 ms for SciPy.
 
 What the numbers show:
 
@@ -112,7 +112,7 @@ What the numbers show:
   while the naive scan grows with r^2.
 - **Fast guided filter:** it is 3 to 5 times faster than the full one.
 - **SciPy:** SciPy's compiled C filters are still 2 to 3 times faster on a
-  plain box or max filter, and about 10 times faster on the EDT. This library
+  plain box or max filter, and about 7 times faster on the EDT. This library
   doesn't try to beat compiled code. It gives readable, dependency-light
   versions with the same asymptotic cost, plus a guided filter, which SciPy
   doesn't have.
