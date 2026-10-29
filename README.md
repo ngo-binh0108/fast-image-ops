@@ -45,6 +45,7 @@ fio.white_tophat(img, 3)                 # bright details smaller than 7 x 7
 
 mask = img > 0.99
 d = fio.distance_transform(~mask)        # distance from each pixel to the nearest True pixel of mask
+d_m = fio.distance_transform(~mask, sampling=(10, 20))  # in metres, for 10 m x 20 m pixels
 ```
 
 ## How the algorithms work
@@ -123,7 +124,7 @@ What the numbers show:
 python -m pytest
 ```
 
-The 77 tests compare every filter with an independent reference:
+The 87 tests compare every filter with an independent reference:
 
 - **Box mean:** brute-force window loops.
 - **Guided filter:** a per-window ridge-regression solve written straight from
@@ -131,7 +132,8 @@ The 77 tests compare every filter with an independent reference:
 - **Morphology:** `scipy.ndimage` grey and binary morphology, for float, uint8,
   int16 and bool images.
 - **Distance transform:** exact equality of squared distances with
-  `scipy.ndimage.distance_transform_edt`, plus a brute-force nearest-zero
+  `scipy.ndimage.distance_transform_edt` (also with non-square pixels via
+  `sampling`), plus a brute-force nearest-zero
   search.
 
 ## License

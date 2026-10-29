@@ -52,3 +52,32 @@ def test_1d_lower_envelope_against_brute_force():
 def test_rejects_non_2d():
     with pytest.raises(ValueError):
         distance_transform(np.ones((2, 2, 2)))
+
+
+@pytest.mark.parametrize("sampling", [2.0, (1.0, 2.5), (10.0, 20.0), (0.3, 1.7)])
+def test_sampling_matches_scipy(sampling):
+    rng = np.random.default_rng(3)
+    mask = rng.random((40, 57)) > 0.02
+    expected = ndimage.distance_transform_edt(mask, sampling=sampling)
+    np.testing.assert_allclose(distance_transform(mask, sampling=sampling), expected, rtol=1e-12, atol=1e-9)
+
+
+def test_sampling_scales_uniformly():
+    rng = np.random.default_rng(4)
+    mask = rng.random((30, 30)) > 0.05
+    np.testing.assert_allclose(distance_transform(mask, sampling=10.0), 10.0 * distance_transform(mask))
+
+
+def test_1d_spacing_against_brute_force():
+    rng = np.random.default_rng(5)
+    f = rng.random((4, 25)) * 50
+    f[rng.random(f.shape) < 0.5] = np.inf
+    x = np.arange(25) * 1.7
+    brute = ((x[:, None] - x[None, :]) ** 2 + f[:, None, :]).min(axis=-1)
+    np.testing.assert_allclose(squared_distance_1d(f, spacing=1.7), brute)
+
+
+@pytest.mark.parametrize("sampling", [0, -1.0, (1.0, 0.0), float('nan')])
+def test_rejects_bad_sampling(sampling):
+    with pytest.raises(ValueError):
+        distance_transform(np.ones((3, 3)), sampling=sampling)
