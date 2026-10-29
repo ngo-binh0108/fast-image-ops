@@ -112,7 +112,7 @@ What the numbers show:
   while the naive scan grows with r^2.
 - **Fast guided filter:** it is 3 to 5 times faster than the full one.
 - **SciPy:** SciPy's compiled C filters are still 2 to 3 times faster on a
-  plain box or max filter, and about 10 times faster on the EDT. This library
+  plain box or max filter, and about 7 times faster on the EDT. This library
   doesn't try to beat compiled code. It gives readable, dependency-light
   versions with the same asymptotic cost, plus a guided filter, which SciPy
   doesn't have.
